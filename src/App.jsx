@@ -16,9 +16,18 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 import RSSParser from 'rss-parser';
-import { formatAthensTime } from './utils/dateUtils'; // Import the utility function
+import { formatAthensTime } from './utils/dateUtils';
 import EarthquakeMap from './components/EarthquakeMap.jsx';
 import EarthquakeList from './components/EarthquakeList.jsx';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { Landscape } from '@mui/icons-material';
+
+// Dark mode theme
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
+});
 
 // Time filter options
 const timeFilters = [
@@ -141,99 +150,101 @@ const App = () => {
 
   return (
     <>
-      <CssBaseline />
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Greece Earthquake Monitor
+      <ThemeProvider theme={darkTheme}>
+        <CssBaseline />
+        <AppBar position="static">
+          <Toolbar>
+            <Typography variant="h3" sx={{ flexGrow: 1 }}>
+              <Landscape sx={{ ml: 2, fontSize:40, mt:1 }} />
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <FormControl variant="standard" sx={{ minWidth: 120 }}>
+                <InputLabel shrink>Time Filter</InputLabel>
+                <Select
+                  value={timeFilter}
+                  onChange={handleTimeFilterChange}
+                  label="Time Filter"
+                >
+                  {timeFilters.map(filter => (
+                    <MenuItem key={filter.value} value={filter.value}>
+                      {filter.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl variant="standard" sx={{ minWidth: 140 }}>
+                <InputLabel shrink>Magnitude Filter</InputLabel>
+                <Select
+                  value={magnitudeFilter}
+                  onChange={handleMagnitudeFilterChange}
+                  label="Magnitude Filter"
+                >
+                  {magnitudeFilters.map(filter => (
+                    <MenuItem key={filter.label} value={filter.value}>
+                      {filter.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+          </Toolbar>
+        </AppBar>
+
+        <Container maxWidth="xl" sx={{ flexGrow: 1, py: 2 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <Paper sx={{ p: 2 }}>
+                <Typography variant="h6">Latest Earthquake:</Typography>
+                {latestEarthquake.pubDate ? (
+                  <>
+                    {/* Mobile View */}
+                    <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+                      <Typography>
+                        M {latestEarthquake.magnitude} - {latestEarthquake.location}
+                      </Typography>
+                      <Typography>
+                        {formatAthensTime(latestEarthquake.pubDate)}
+                      </Typography>
+                    </Box>
+                    {/* Desktop View */}
+                    <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                      <Typography>
+                        M {latestEarthquake.magnitude} - {latestEarthquake.location} - {formatAthensTime(latestEarthquake.pubDate)}
+                      </Typography>
+                    </Box>
+                  </>
+                ) : (
+                  <Typography>{loading ? 'Loading...' : 'No recent earthquakes'}</Typography>
+                )}
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12} md={4} sx={{ height: { xs: '30vh', md: '80vh' }, overflowY: 'auto' }}>
+              <EarthquakeList earthquakes={filteredEarthquakes} />
+            </Grid>
+
+            <Grid item xs={12} md={8} sx={{ height: { xs: '60vh', md: '80vh' } }}>
+              <Paper sx={{ height: '100%', p: 1 }}>
+                <EarthquakeMap earthquakes={filteredEarthquakes} />
+              </Paper>
+            </Grid>
+          </Grid>
+        </Container>
+
+        {/* Footer */}
+        <Box component="footer" sx={{ py: 2, textAlign: 'center' }}>
+          <Typography variant="body2" color="text.secondary">
+            With data from{' '}
+            <Link 
+              href="http://www.geophysics.geol.uoa.gr/stations/maps/recent_gr.html" 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              UOA
+            </Link>
           </Typography>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <FormControl variant="standard" sx={{ minWidth: 120 }}>
-              <InputLabel shrink>Time Filter</InputLabel>
-              <Select
-                value={timeFilter}
-                onChange={handleTimeFilterChange}
-                label="Time Filter"
-              >
-                {timeFilters.map(filter => (
-                  <MenuItem key={filter.value} value={filter.value}>
-                    {filter.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl variant="standard" sx={{ minWidth: 140 }}>
-              <InputLabel shrink>Magnitude Filter</InputLabel>
-              <Select
-                value={magnitudeFilter}
-                onChange={handleMagnitudeFilterChange}
-                label="Magnitude Filter"
-              >
-                {magnitudeFilters.map(filter => (
-                  <MenuItem key={filter.label} value={filter.value}>
-                    {filter.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
-        </Toolbar>
-      </AppBar>
-
-      <Container maxWidth="xl" sx={{ flexGrow: 1, py: 2 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <Paper sx={{ p: 2, backgroundColor: '#fff3e0' }}>
-              <Typography variant="h6">Latest Earthquake:</Typography>
-              {latestEarthquake.pubDate ? (
-                <>
-                  {/* Mobile View */}
-                  <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-                    <Typography>
-                      M {latestEarthquake.magnitude} - {latestEarthquake.location}
-                    </Typography>
-                    <Typography>
-                      {formatAthensTime(latestEarthquake.pubDate)}
-                    </Typography>
-                  </Box>
-                  {/* Desktop View */}
-                  <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                    <Typography>
-                      M {latestEarthquake.magnitude} - {latestEarthquake.location} - {formatAthensTime(latestEarthquake.pubDate)}
-                    </Typography>
-                  </Box>
-                </>
-              ) : (
-                <Typography>{loading ? 'Loading...' : 'No recent earthquakes'}</Typography>
-              )}
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12} md={4} sx={{ height: { xs: '30vh', md: '80vh' }, overflowY: 'auto' }}>
-            <EarthquakeList earthquakes={filteredEarthquakes} />
-          </Grid>
-
-          <Grid item xs={12} md={8} sx={{ height: { xs: '60vh', md: '80vh' } }}>
-            <Paper sx={{ height: '100%', p: 1 }}>
-              <EarthquakeMap earthquakes={filteredEarthquakes} />
-            </Paper>
-          </Grid>
-        </Grid>
-      </Container>
-
-      {/* Footer */}
-      <Box component="footer" sx={{ py: 2, textAlign: 'center', backgroundColor: '#f5f5f5' }}>
-        <Typography variant="body2" color="text.secondary">
-          With data from{' '}
-          <Link 
-            href="http://www.geophysics.geol.uoa.gr/stations/maps/recent_gr.html" 
-            target="_blank" 
-            rel="noopener noreferrer"
-          >
-            UOA - Department of Geophysics - Geothermics
-          </Link>
-        </Typography>
-      </Box>
+        </Box>
+      </ThemeProvider>
     </>
   );
 };
