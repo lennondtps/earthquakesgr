@@ -3,7 +3,25 @@ import { formatDistanceToNow } from 'date-fns';
 
 const EarthquakeList = ({ earthquakes, selectedIndex }) => {
   return (
-    <List sx={{ overflow: 'auto', maxHeight: '80vh' }}>
+    <List sx={{ 
+      height: { xs: '30vh', md: '80vh' },
+      scrollbarWidth: 'thin', // For Firefox
+      scrollbarColor: '#555 #2c2c2c', // For Firefox
+      '&::-webkit-scrollbar': {
+        width: '8px',
+      },
+      '&::-webkit-scrollbar-track': {
+        background: '#2c2c2c',
+        borderRadius: '4px',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        background: '#555',
+        borderRadius: '4px',
+      },
+      '&::-webkit-scrollbar-thumb:hover': {
+        background: '#777',
+      },
+    }}>
       {earthquakes.map((eq, index) => (
         <ListItem key={index} selected={selectedIndex === index}>
           <ListItemText
