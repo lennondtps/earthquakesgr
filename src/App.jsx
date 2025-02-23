@@ -81,6 +81,7 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const [timeFilter, setTimeFilter] = useState(1440); // Default to last 24 hours
   const [magnitudeFilter, setMagnitudeFilter] = useState('all'); // Default to all magnitudes
+  const [selectedEarthquakeId, setSelectedEarthquakeId] = useState(null);
 
   // Latest earthquake is always the first in the sorted list
   const latestEarthquake = earthquakes[0] || {};
@@ -110,6 +111,10 @@ const App = () => {
     const range = event.target.value;
     setMagnitudeFilter(range);
     setFilteredEarthquakes(filterEarthquakes(earthquakes, timeFilter, range));
+  };
+
+  const handleEarthquakeClick = (eq) => {
+    setSelectedEarthquakeId(prevId => prevId === eq.link ? null : eq.link);
   };
 
   const fetchEarthquakes = async () => {
@@ -147,6 +152,16 @@ const App = () => {
       setFilteredEarthquakes(filterEarthquakes(earthquakes, timeFilter, magnitudeFilter));
     }
   }, [earthquakes, timeFilter, magnitudeFilter]);
+
+  // Clear selection if selected earthquake is filtered out
+  useEffect(() => {
+    if (selectedEarthquakeId && !filteredEarthquakes.some(eq => eq.link === selectedEarthquakeId)) {
+      setSelectedEarthquakeId(null);
+    }
+  }, [filteredEarthquakes, selectedEarthquakeId]);
+
+  // Find the selected earthquake object
+  const selectedEarthquake = filteredEarthquakes.find(eq => eq.link === selectedEarthquakeId);
 
   return (
     <>
@@ -220,12 +235,16 @@ const App = () => {
             </Grid>
 
             <Grid item xs={12} md={4} sx={{ height: { xs: '30vh', md: '80vh' }, overflowY: 'auto' }}>
-              <EarthquakeList earthquakes={filteredEarthquakes} />
+              <EarthquakeList
+                earthquakes={filteredEarthquakes}
+                onEarthquakeClick={handleEarthquakeClick}
+                selectedEarthquakeId={selectedEarthquakeId}
+              />
             </Grid>
 
             <Grid item xs={12} md={8} sx={{ height: { xs: '60vh', md: '80vh' } }}>
               <Paper sx={{ height: '100%', p: 1 }}>
-                <EarthquakeMap earthquakes={filteredEarthquakes} />
+                <EarthquakeMap earthquakes={selectedEarthquake ? [selectedEarthquake] : filteredEarthquakes} />
               </Paper>
             </Grid>
           </Grid>

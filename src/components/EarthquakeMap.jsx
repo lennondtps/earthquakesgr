@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -31,15 +32,31 @@ const getMarkerColor = (magnitude) => {
 };
 
 const EarthquakeMap = ({ earthquakes }) => {
-  const center = earthquakes.length > 0 
-    ? [earthquakes[0].latitude, earthquakes[0].longitude]
-    : [39.0742, 21.8243]; // Default to Greece center
+  const mapRef = useRef(null);
+  const defaultCenter = [39.0742, 21.8243]; // Greece coordinates
+
+  // Update map view when earthquakes change
+  useEffect(() => {
+    if (mapRef.current) {
+      if (earthquakes.length === 1) {
+        const eq = earthquakes[0];
+        mapRef.current.setView([eq.latitude, eq.longitude], 8);
+      } else {
+        const center = earthquakes.length > 0 
+          ? [earthquakes[0].latitude, earthquakes[0].longitude]
+          : defaultCenter;
+        mapRef.current.setView(center, 6);
+      }
+    }
+  }, [earthquakes]);
 
   return (
-    <MapContainer 
-      center={center} 
-      zoom={6} 
+    <MapContainer
+      center={defaultCenter}
+      zoom={6}
       style={{ height: '100%', width: '100%' }}
+      ref={mapRef}
+      whenCreated={mapInstance => { mapRef.current = mapInstance }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

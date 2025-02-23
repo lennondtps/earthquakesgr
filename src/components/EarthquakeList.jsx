@@ -1,7 +1,7 @@
 import { List, ListItem, ListItemText, Typography } from '@mui/material';
 import { formatDistanceToNow } from 'date-fns';
 
-const EarthquakeList = ({ earthquakes, selectedIndex }) => {
+const EarthquakeList = ({ earthquakes, onEarthquakeClick, selectedEarthquakeId }) => {
   return (
     <List sx={{ 
       height: { xs: '30vh', md: '80vh' },
@@ -23,7 +23,12 @@ const EarthquakeList = ({ earthquakes, selectedIndex }) => {
       },
     }}>
       {earthquakes.map((eq, index) => (
-        <ListItem key={index} selected={selectedIndex === index}>
+        <ListItem
+          key={index}
+          button
+          onClick={() => onEarthquakeClick(eq)}
+          selected={selectedEarthquakeId === eq.link}
+        >
           <ListItemText
             primary={`M ${eq.magnitude} - ${eq.location}`}
             secondary={
